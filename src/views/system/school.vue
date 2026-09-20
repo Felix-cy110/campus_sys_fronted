@@ -15,15 +15,15 @@ const {
   handleSizeChange,
 } = useTable(getSchoolList, { getParams: () => searchParams.value })
 
-const dialog = ref({ visible: false, id: 0, name: '', shortName: '', province: '', city: '', logo: '' })
+const dialog = ref({ visible: false, id: 0, name: '', code: '', province: '', city: '', logo: '' })
 const searchParams = ref({ keyword: '', province: '', city: '' })
 
 const openAddDialog = () => {
-  dialog.value = { visible: true, id: 0, name: '', shortName: '', province: '', city: '', logo: '' }
+  dialog.value = { visible: true, id: 0, name: '', code: '', province: '', city: '', logo: '' }
 }
 
 const openEditDialog = (row: any) => {
-  dialog.value = { visible: true, id: row.id, name: row.name, shortName: row.shortName, province: row.province, city: row.city, logo: row.logoUrl }
+  dialog.value = { visible: true, id: row.id, name: row.name, code: row.code || '', province: row.province, city: row.city, logo: row.logoUrl }
 }
 
 const submitDialog = async () => {
@@ -31,15 +31,15 @@ const submitDialog = async () => {
     ElMessage.warning('请输入学校名称')
     return
   }
-  if (!dialog.value.shortName.trim()) {
-    ElMessage.warning('请输入学校简称')
+  if (!dialog.value.code.trim()) {
+    ElMessage.warning('请输入学校编码')
     return
   }
   try {
     if (dialog.value.id) {
       await updateSchool(dialog.value.id, {
       name: dialog.value.name,
-      shortName: dialog.value.shortName,
+      code: dialog.value.code,
       province: dialog.value.province,
       city: dialog.value.city,
       logoUrl: dialog.value.logo,
@@ -47,7 +47,7 @@ const submitDialog = async () => {
     } else {
       await addSchool({
       name: dialog.value.name,
-      shortName: dialog.value.shortName,
+      code: dialog.value.code,
       province: dialog.value.province,
       city: dialog.value.city,
       logoUrl: dialog.value.logo,
@@ -108,7 +108,7 @@ fetchData(searchParams.value)
           <template #default="{ row }"><el-avatar :src="row.logoUrl" /></template>
         </el-table-column>
         <el-table-column prop="name" label="学校名称" min-width="160" />
-        <el-table-column prop="shortName" label="学校简称" width="120" />
+        <el-table-column prop="code" label="学校编码" width="120" />
         <el-table-column prop="province" label="省份" width="120" />
         <el-table-column prop="city" label="城市" width="120" />
         <el-table-column label="操作" width="180" fixed="right">
@@ -129,8 +129,8 @@ fetchData(searchParams.value)
         <el-form-item label="学校名称">
           <el-input v-model="dialog.name" placeholder="请输入学校名称" />
         </el-form-item>
-        <el-form-item label="学校简称">
-          <el-input v-model="dialog.shortName" placeholder="请输入学校简称，如 SEU" />
+        <el-form-item label="学校编码">
+          <el-input v-model="dialog.code" placeholder="请输入学校编码" />
         </el-form-item>
         <el-form-item label="省份">
           <el-input v-model="dialog.province" placeholder="请输入省份" />

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { assignAdminPermissions, getAdminPermissions, getUserList } from '@/api'
+import { assignAdminPermissions, getAdminPermissions, getAdminList } from '@/api'
 import type { AdminPermissionCode } from '@/types'
 
 const loading = ref(false)
@@ -35,10 +35,10 @@ const permissionOptions: { label: string; value: AdminPermissionCode }[] = [
 const loadAdmins = async () => {
   loading.value = true
   try {
-    const res = await getUserList({
-      pageNum: pageNum.value,
-      pageSize: pageSize.value,
-      userType: 1,
+    const res = await getAdminList({
+      page: pageNum.value,
+      size: pageSize.value,
+      role: 2,
     })
     list.value = res.data?.list || []
     total.value = Number(res.data?.total || 0)

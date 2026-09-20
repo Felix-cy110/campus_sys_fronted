@@ -2,6 +2,8 @@
 
 基于 **Vue 3 + TypeScript + Vite** 构建的校园综合管理后台，配套 CampusSys 后端服务。
 
+自动构建和手动部署配置见 [CI/CD 使用说明](CICD.md)。
+
 ## 技术栈
 
 | 类别 | 技术 | 说明 |
@@ -56,7 +58,7 @@
 
 ### 环境要求
 
-- Node.js >= 18
+- Node.js >= 22.12（CI 使用 Node.js 22）
 - pnpm（推荐）或 npm
 
 ### 安装与启动

@@ -114,6 +114,7 @@ const removeManualRow = (index: number) => {
     return
   }
   const row = manualList.value[index]
+  if (!row) return
   if (row.avatarPreview) URL.revokeObjectURL(row.avatarPreview)
   manualList.value.splice(index, 1)
 }
@@ -122,6 +123,7 @@ const handleManualAvatarChange = (index: number, e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
   const row = manualList.value[index]
+  if (!row) return
   if (row.avatarPreview) URL.revokeObjectURL(row.avatarPreview)
   row.avatarFile = file
   row.avatarPreview = URL.createObjectURL(file)
@@ -148,7 +150,7 @@ const handleManualSubmit = async () => {
     const users: { nickname: string; avatarUrl: string }[] = []
     for (const row of manualList.value) {
       const res = await uploadImage(row.avatarFile!)
-      users.push({ nickname: row.username.trim(), avatarUrl: res.data })
+      users.push({ nickname: row.username.trim(), avatarUrl: res.data.url })
     }
     const { post } = await import('@/utils/request')
     const res = await post('/admin/user/manual-register', { campusId: manualCampusId.value, users })

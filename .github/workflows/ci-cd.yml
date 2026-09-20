@@ -1,0 +1,75 @@
+name: 管理端 CI/CD
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 构建成功后部署到现有服务器（仅默认分支）
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admin-${{ github.event_name == 'workflow_dispatch' && 'release' || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: 检查发布分支
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: test "$GITHUB_REF" = "refs/heads/$DEFAULT_BRANCH"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: 类型检查与生产构建
+        env:
+          VITE_BACKEND_PREFIX: ''
+        run: npm run build
+      - name: 打包静态资源
+        run: |
+          printf '%s\n' "$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" > dist/revision.txt
+          tar -czf admin.tar.gz -C dist .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: admin-${{ github.sha }}
+          path: admin.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+      - name: 上传并部署
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${SSH_HOST:?请配置 SSH_HOST}" "${SSH_USER:?请配置 SSH_USER}"
+          : "${SSH_PRIVATE_KEY:?请配置 SSH_PRIVATE_KEY}" "${SSH_KNOWN_HOSTS:?请配置 SSH_KNOWN_HOSTS}"
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9.-]+$ && "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ && "$SSH_PORT" =~ ^[0-9]+$ ]]
+          ssh_dir=$(mktemp -d)
+          trap 'rm -rf -- "$ssh_dir"' EXIT
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$ssh_dir/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          chmod 600 "$ssh_dir/key" "$ssh_dir/known_hosts"
+          options=(-i "$ssh_dir/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=15)
+          release_id="${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          scp -P "$SSH_PORT" "${options[@]}" admin.tar.gz "$SSH_USER@$SSH_HOST:/tmp/campusx-admin-$release_id.tar.gz"
+          ssh -p "$SSH_PORT" "${options[@]}" "$SSH_USER@$SSH_HOST" "sudo -n bash -s -- '$release_id'" < deploy/deploy-ci.sh

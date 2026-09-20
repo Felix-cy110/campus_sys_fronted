@@ -29,6 +29,7 @@ const removePost = (index: number) => {
 const handleImageChange = (index: number, e: Event) => {
   const files = Array.from((e.target as HTMLInputElement).files || [])
   const post = posts.value[index]
+  if (!post) return
   post.images.push(...files)
   files.forEach(f => post.previewUrls.push(URL.createObjectURL(f)))
   ;(e.target as HTMLInputElement).value = ''
@@ -36,7 +37,9 @@ const handleImageChange = (index: number, e: Event) => {
 
 const removeImage = (postIndex: number, imgIndex: number) => {
   const post = posts.value[postIndex]
-  URL.revokeObjectURL(post.previewUrls[imgIndex])
+  if (!post || imgIndex < 0 || imgIndex >= post.images.length) return
+  const previewUrl = post.previewUrls[imgIndex]
+  if (previewUrl) URL.revokeObjectURL(previewUrl)
   post.images.splice(imgIndex, 1)
   post.previewUrls.splice(imgIndex, 1)
 }
