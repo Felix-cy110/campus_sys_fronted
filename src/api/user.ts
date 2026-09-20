@@ -86,7 +86,7 @@ export function getCertificationList(params: CertificationListParams) {
 }
 
 // GET /admin/page?role=... — 分页查询管理员列表
-export function getAdminList(params: UserListParams) {
+export function getAdminList(params: UserListParams & { role?: number; page?: number; size?: number }) {
   return get<PageResponse<UserAdminVO>>('/admin/page', { params })
 }
 

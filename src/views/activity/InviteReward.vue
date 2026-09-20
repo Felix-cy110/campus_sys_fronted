@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, VideoPlay, VideoPause, Edit, Delete, Search, RefreshRight } from '@element-plus/icons-vue'
+import { Plus, VideoPlay, VideoPause, Edit } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import type { InviteRewardActivity, RewardTier, InviteeRecord } from '@/api/activity'
 import {
@@ -10,7 +10,6 @@ import {
   updateInviteRewardActivity,
   closeActivity,
   drawActivity,
-  deleteInviteRewardActivity,
   getRewardTiers,
   createRewardTier,
   updateRewardTier,
@@ -115,7 +114,7 @@ const handleCreateSubmit = async () => {
   const valid = await createFormRef.value?.validate().catch(() => false)
   if (!valid) return
   try {
-    const res = await createInviteRewardActivity({
+    await createInviteRewardActivity({
       name: createForm.value.name,
       description: createForm.value.description,
       startTime: createForm.value.startTime,
@@ -269,21 +268,6 @@ const handleTierSubmit = async () => {
   }
 }
 
-const handleDeleteActivity = async () => {
-  if (!activity.value) return
-  try {
-    await ElMessageBox.confirm(`确定关闭活动「${activity.value.name}」吗？`, '关闭确认', { type: 'warning', confirmButtonText: '关闭', cancelButtonText: '取消' })
-    await deleteInviteRewardActivity(activity.value.id)
-    ElMessage.success('活动已关闭')
-    tiers.value = []
-    inviteeRecords.value = []
-    await fetchActivities()
-    if (activities.value.length === 0) activity.value = null
-  } catch {}
-}
-
-const handleInviteeSearch = () => { inviteePage.value.pageNum = 1; fetchInviteeRecords() }
-const handleInviteeReset = () => { inviteePage.value.pageNum = 1; fetchInviteeRecords() }
 const handleInviteePageChange = (page: number) => { inviteePage.value.pageNum = page; fetchInviteeRecords() }
 const handleInviteeSizeChange = (size: number) => { inviteePage.value.pageSize = size; inviteePage.value.pageNum = 1; fetchInviteeRecords() }
 

@@ -31,10 +31,10 @@ export async function getStatistics(params: StatisticsDashboardParams = {}) {
   if (campusId) statsParams.campusId = campusId
 
   const [summaryRes, userStatsRes, contentStatsRes, commentStatsRes] = await Promise.allSettled([
-    get<any>('/admin/user/summary', { campusId, activePeriod: 30 }),
-    get<any>('/admin/user/stats', statsParams),
-    get<any>('/admin/content/stats', statsParams),
-    get<any>('/admin/comment/stats', statsParams),
+    get<any>('/admin/user/summary', { params: { campusId, activePeriod: 30 } }),
+    get<any>('/admin/user/stats', { params: statsParams }),
+    get<any>('/admin/content/stats', { params: statsParams }),
+    get<any>('/admin/comment/stats', { params: statsParams }),
   ])
 
   let txRes: any = null

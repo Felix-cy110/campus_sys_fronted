@@ -8,11 +8,11 @@ export interface AdminRatingPageParams {
 }
 
 export function getReviewList(params: AdminRatingPageParams) {
-  return get<any>('/admin/teacher/rating', params)
+  return get<any>('/admin/teacher/rating', { params })
 }
 
 export function getReviewAuditList(params: AdminRatingPageParams) {
-  return get<any>('/admin/teacher/rating', params)
+  return get<any>('/admin/teacher/rating', { params })
 }
 
 export function deleteReview(id: number) {
@@ -32,7 +32,7 @@ export interface CourseApplyPageParams {
 
 /** 获取待审核课程申请列表 */
 export function getCourseApplyList(params: CourseApplyPageParams) {
-  return get<any>('/admin/teacher/course/apply', params)
+  return get<any>('/admin/teacher/course/apply', { params })
 }
 
 /** 审批课程申请 */

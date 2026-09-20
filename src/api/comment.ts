@@ -2,7 +2,6 @@
  * 评论管理相关API
  */
 import { get, post, del } from '@/utils/request'
-import type { PageResponse, PageParams } from '@/types'
 
 export interface AdminCommentPageParams {
   campusName?: string
@@ -12,7 +11,7 @@ export interface AdminCommentPageParams {
 }
 
 export function getCommentAuditList(params: AdminCommentPageParams) {
-  return get<any>('/admin/post/comments', params)
+  return get<any>('/admin/post/comments', { params })
 }
 
 /**

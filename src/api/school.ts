@@ -18,7 +18,8 @@ export function getSchoolDetail(id: number) {
 
 export interface AddSchoolParams {
   name: string
-  shortName: string
+  code: string
+  shortName?: string
   province: string
   city: string
   logoUrl?: string
