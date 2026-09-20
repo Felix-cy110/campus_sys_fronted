@@ -25,7 +25,17 @@ chmod -R a+rX "$release"
 # 保留旧的哈希资源，让更新前已打开的页面仍能加载旧代码块。
 if test -d "$previous/assets"; then
     mkdir -p "$release/assets"
-    cp -an "$previous/assets/." "$release/assets/"
+    while IFS= read -r -d '' asset; do
+        relative=${asset#"$previous/assets/"}
+        destination="$release/assets/$relative"
+        # 部分服务器的 cp -n 在跳过同名文件时返回非零状态。
+        # 显式跳过已有资源，只补齐旧页面仍然需要的文件。
+        if [[ -e "$destination" || -L "$destination" ]]; then
+            continue
+        fi
+        mkdir -p "$(dirname "$destination")"
+        cp -a -- "$asset" "$destination"
+    done < <(find "$previous/assets" -type f -print0)
 fi
 
 switch_to() {
